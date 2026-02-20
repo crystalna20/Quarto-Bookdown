@@ -6,6 +6,7 @@ book:
   author: "Crystal Adote"
   date: "2/19/2026"
   chapters:
+    - index.qmd
     - intro.qmd
     - 01-NYC-NYPD-Shooting-data.qmd
     - 02_Continuing-the-Law-Firm-Analysis.qmd
@@ -14,8 +15,8 @@ book:
     - 05-Florida_Crime_Analytics.qmd
     - 06-Streaming_Analysis.qmd
     - 07-Wage_Analytics.qmd
-    - 08-shiny?app exploration.qmd
-    - Final reflection.qmd
+    - 08-shiny-app exploration.qmd
+    - 09-Final-Reflection.qmd
 
 
 format:
