@@ -1,0 +1,130 @@
+---
+title: "NYC NYPD Shooting Data"
+---
+:::{.callout-note}
+## Note
+The shooting data from nycOpenData is not available anymore, so I had to use another one that was provided.
+:::
+
+
+## Introduction
+
+The purpose of this chapter is to examine data about shootings in NYC. I cleaned the data a little bit and then created tables and graphs to see where and what time of day shootings occur across the 5 boroughs.
+
+## Loading Libraries
+
+```{r}
+#| label: loading-libraries
+#| message: false
+#| warning: true
+#| include: true
+library(tidyverse)
+library(lubridate)
+library(stringr)
+library(tidyr)
+library(ggplot2)
+library(knitr)
+library(readxl)
+```
+
+## Calling the data
+
+```{r}
+#| label: calling-the-data
+#| message: true
+#| warning: true
+#| paged-print: true
+shooting_data<- read_xlsx("/Users/CrystalAdote/Desktop/2026 Experimental Psyc/NYPD_Shooting_Incident_Data__Historic__20250910.xlsx", skip = 1)
+View(shooting_data)
+```
+
+Here, I used the readxl function to pull up the shooting data from excel.
+
+## Cleaning Data
+
+```{r}
+#| label: cleaning-data
+#| message: true
+#| warning: true
+#| paged-print: true
+shooting_data$LOC_CLASSFCTN_DESC <- str_to_lower(shooting_data$LOC_CLASSFCTN_DESC)
+shooting_data %>% head(30)
+
+shooting_data <- shooting_data %>%
+  mutate(
+    hour = as.numeric(format(strptime(OCCUR_TIME, format = "%H:%M"), "%H")),
+    time_of_day2 = case_when(
+      hour >= 5  & hour < 12 ~ "Morning",
+      hour >= 12 & hour < 18 ~ "Afternoon",
+      TRUE                   ~ "Night"  
+    )
+  )
+shooting_data$time_of_day2 %>% head(30)
+```
+
+In this code chunk, I used the str_to_lower() function to put the words in the loc_classfctn_desc column in lowercase. For the second code in this chunk, I added a new column using the mutate() and case_when() function that tells us whether the shooting was done in the morning, afternoon, or night.
+
+## Insights
+
+```{r}
+#| label: insights
+#| message: true
+#| warning: true
+#| paged-print: true
+shooting_data %>% count(shooting_data$time_of_day2)%>% arrange(desc(n)) 
+```
+
+In this code chunk, I used the count(), arrange(), and head() function to count the amount of times shootings happened, and what time of day it was.
+
+## Tables and Graphs
+
+```{r}
+#| label: fig-shoting-time-of-day
+#| message: true
+#| warning: true
+#| fig-cap: This bar graph shows the time of days that shootings occur.
+#| paged-print: true
+ggplot(shooting_data, aes(x= time_of_day2))+
+  geom_bar(color="steelblue", fill="white")+
+  labs(
+    title= "Time of Day",
+    x= "Day",
+    y= "Count")+
+  theme(
+    plot.title = element_text(size=18, family="mono", face="bold")
+  )
+```
+
+```{r}
+#| label: fig-boro-shooting
+#| message: true
+#| warning: true
+#| fig-cap: This bar graph shows the different boroughs and the amount of shootings that take place as well as whether the shootings were outside
+#| paged-print: true
+ggplot(shooting_data, aes(x=BORO))+
+  geom_bar(color="purple", fill="grey")+
+  facet_wrap(~LOC_OF_OCCUR_DESC)+
+  labs(
+    title= "Different Boroughs",
+    x= "Borough",
+    y="Count")+
+  coord_flip()+
+  theme(
+    plot.title= element_text(family="serif", face="bold", size=18),
+    axis.text.x = element_text(size = 5)
+  )
+```
+
+```{r}
+#| label: tbl-time_of_day2
+#| message: true
+#| warning: true
+#| paged-print: true
+kable(shooting_data$time_of_day2) %>% head(30)
+```
+
+In this code chunk, for the first part I used ggplot and the geom_bar function to create a bar graph to show the time of day. The x axis was time of day (morning, afternoon, and night), and the y axis was the amount of shootings that happened at those 3 times. For the second part of the the chunk I created another bar graph using ggplot of geom_bar again, but this time to see what boroughs shootings happened in. The x-axis was the 5 boroughs in NYC, and the y-axis was the amount of times a shooting occurred in each borough. I also used the facet_wrap function to incorporate the location of the shootings in the same graph. There were 3 options; outside, inside, or N/A. For the last part of the chunk I created a table for the time of day column using kable. I also used the head function to only get the first 30 data points.
+
+## Reflection
+
+This will be able to help me with my thesis research because I will be able to upload my data and run some code to create tables and graphs (visuals). I will be able to write explanations and analyze the code I ran for a better understanding while having it all in one document so it's easy to read. It will also allow me to come back and add or change things easily.

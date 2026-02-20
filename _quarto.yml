@@ -1,0 +1,31 @@
+project:
+  type: book
+
+book:
+  title: "Experimental Psyc 2026 Quarto Book"
+  author: "Crystal Adote"
+  date: "2/19/2026"
+  chapters:
+    - NYC NYPD Shooting data.qmd
+    - Continuing the Law Firm Analysis.qmd
+    - Reproducible psyc Midterm.qmd
+    - NBA analysis.qmd
+    - Florida analysis.qmd
+    - Streaming analysis.qmd
+    - Wage analytics.qmd
+    - Shiny app exploration.qmd
+    - Final reflection.qmd
+    - References. qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+  pdf:
+    documentclass: scrreprt
+
+editor: visual
+

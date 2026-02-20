@@ -1,0 +1,110 @@
+---
+title: "Testing the Shiny App Using NYC 311 Data"
+---
+:::{callout-note}
+## Note
+The inputs and outputs I created don't show up in this chapter.
+:::
+
+## Introduction
+
+The purpose of this chapter was to create my own shiny app and explore the NYC 311 data set. In this app I explored the agency and complaint types, and the location of the complaints. \## 311 Data Expoloration Continued Today we are expanding our exploration of the NYC **311** dataset and shiny app!
+
+## Loading our libraries
+
+Here we are going to make sure that all of our libraries are loaded
+
+```{r}
+#| label: loading-libraries
+#| message: false
+#| warning: false
+#| paged-print: false
+library(shiny)
+library(tidyverse)
+library(nycOpenData)
+library(DT)
+```
+
+## Now we are calling the data
+
+We are also looking at the agency names.
+
+```{r}
+#| label: calling-the-dataset
+#| message: false
+#| warning: false
+#| paged-print: false
+data_311<- nyc_311(limit=10000)
+View(data_311)
+unique(data_311$agency_name)
+```
+
+## Inputs and Outputs
+
+Now we are looking at the top 30 complaints from each agency type.
+
+```{r}
+#| label: creating-inputs-and-outputs
+#| echo: false
+#| message: false
+#| warning: false
+#| paged-print: false
+inputPanel(
+  selectInput("agency", "Choose an agency", 
+              choices = c("Department of Transportation", "New York City Police Department", "Department of Sanitation", "Department of Parks and Recreation", "Department of Health and Mental Hygine", "Taxi and Limousine Commission", "Department of Homeless Service", "Department of Consumer and Worker Protection", "Department of Housing Preservation and Development", "Department of Environmental Protection", "Office of the Sheriff", "Economic Development Corporation", "Department of Education")),
+  sliderInput("top_n", "Number of top Complaints:", 1,30,40))
+selectInput("loc_type", "Location of Complaints:",
+                  choices = sort(unique(data_311$location_type)),
+                  selected = unique(data_311$location_type)[1])
+      sliderInput("loc_n", "Top location types:", 1, 20, 10)
+  
+    
+    mainPanel( 
+      textOutput("summary"),
+      plotOutput("plot1"),
+      plotOutput("plot2"),
+      DTOutput("table")
+    )
+  
+
+renderPlot({
+data_311 %>% 
+    filter(agency_name == input$agency) %>%
+    count(complaint_type, sort = T) %>% 
+    slice_head(n=input$top_n) %>% 
+    ggplot(aes(n, fct_reorder(complaint_type,n)))+
+    geom_col(fill="deepskyblue1")
+})
+
+renderPlot({
+  data_311 %>% 
+      filter(location_type == input$loc_type) %>% 
+      count(complaint_type, sort = TRUE) %>% 
+      slice_head(n = 20) %>% 
+      ggplot(aes(n, fct_reorder(complaint_type, n))) +
+      geom_col(fill = "purple") +
+      labs(title = paste("Complaints at", input$loc_type),
+           x = "Number of Complaints", y = "Complaint Type")
+  })
+
+```
+
+## Embedded Application
+
+```{r}
+#| label: embedding-the-application
+#| echo: false
+#| message: false
+#| warning: false
+#| paged-print: false
+shinyAppDir(
+  ("/Users/crystaladote/Downloads/Reproducible Psyc Fall 2025/311_agency_type"),
+  options = list(
+    width = "100%", height = 550
+  )
+)
+```
+
+## Conclusion
+
+We can see that the agency with the most compaint types is the Department of Sanitation. There are some agencies that don't show any data on the type of complaints which may be an error in the coding or that they don't have any recorded complaints.

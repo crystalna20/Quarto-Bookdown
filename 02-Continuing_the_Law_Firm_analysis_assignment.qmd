@@ -1,0 +1,183 @@
+---
+title: "Law Firm Analysis"
+---
+
+::: {callout-warning}
+## Warning
+
+There are 2 boxplots in this chapter that are not clear and looks like there are just little dots everywhere.
+:::
+
+## Introduction
+
+The purpose of this chapter was to examine data about violations and tickets among different states such as NY, NJ, and CT. I analyzed the data to answer questions such as whether certain counties have higher payment amounts, if certain agencies issue higher payments, and if drivers from different states pay different amounts for tickets.
+
+## Loading Libraries
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: true
+#| label: loading-libraries
+library(tidyverse)
+library(supernova)
+library(AICcmodavg)
+library(mosaic)
+library(httr)
+library(jsonlite)
+library(ggplot2)
+```
+
+## Overview
+
+I'm a data scientist, currently working for a Law Firm that specializes in fighting parking and camera tickets. They want me to uncover hidden patterns in NYC violation data such as:
+
+If certain agencies issue higher payments?
+
+If drivers from different states (NY, NJ, CT) pay more?
+
+If certain counties tend to have higher payment amounts?
+
+I will be using and analyzing NYC violation data from NYCOpenData, which can be found at this link: https://data.cityofnewyork.us/City-Government/Open-Parking-and-Camera-Violations/nc67-uf89/about_data
+
+```{r}
+#| label: calling-the-data
+#| message: false
+#| warning: true
+#| paged-print: true
+endpoint<-"https://data.cityofnewyork.us/resource/nc67-uf89.json"
+
+resp <- GET(endpoint, query = list(
+  "$limit" = 99999,
+  "$order" = "issue_date DESC"
+))
+
+camera <- fromJSON(content(resp, as = "text"), flatten = TRUE)
+View(camera)
+```
+
+## Agency
+
+```{r}
+#| label: fig-of-agency-and-payment-amount
+#| message: false
+#| warning: true
+#| fig-cap: This is supposed to be a boxplot showing the different payment amounts across groups.
+#| paged-print: true
+ggplot(camera, aes(x = issuing_agency, y = payment_amount)) + geom_boxplot() + labs(
+  title= "Agency and Payment Amount",
+  x = "Agency",
+  y = "Payment Amount")+ theme_minimal() + coord_flip()
+```
+
+```{r}
+#| label: stats-of-payment-amount-and-agency
+#| message: false
+#| warning: false
+#| paged-print: true
+favstats(payment_amount ~ issuing_agency, data=camera) %>% arrange(desc(mean))
+```
+
+```{r}
+#| label: tbl-anova_model_agency
+#| message: false
+#| warning: false
+#| paged-print: true
+anova_model_agency<- aov(payment_amount ~ issuing_agency, data=camera)
+summary(anova_model_agency)
+supernova(anova_model_agency)
+```
+
+\*\* Interpretation\*\*
+
+In our findings, when looking at the sum of squares, we can see that there is a small amount of variance related to the issuing agency. The F-value (7.858) is pretty small, and the p-value (\<2e-16) conveys that the difference is statistically significant. 0.15% of the variance is explained, conveying how little of the variation in payment amount is related to the issuing agency. I would not recommend the law firm to use the issuing agency in their marketing strategy because of how small the variation and f-value is.
+
+## Plate State
+
+```{r}
+#| message: false
+#| label: fig-plate-states-and-payment-amount
+#| warning: false
+#| paged-print: true
+#| fig-cap: "This is supposed to be a boxplot that shows the plate states and their payment amounts."
+#| fig-alt: "This is supposed to be a boxplot that shows the plate states and their payment amounts."
+ggplot(camera, aes(x = state, y = payment_amount)) + geom_boxplot() + labs(
+  title= "Plate State and Payment Amount",
+  x = "State",
+  y = "Payment Amount")+ theme_minimal() + coord_flip()
+```
+
+```{r}
+#| label: stats-of-payment-amount-and -state
+#| message: false
+#| warning: false
+#| paged-print: true
+favstats(payment_amount ~ state, data=camera) %>% arrange(desc(mean))
+```
+
+```{r}
+#| label: tbl-anova_model_state
+#| message: false
+#| warning: false
+#| paged-print: true
+anova_model_state<- aov(payment_amount ~ state, data=camera)
+summary(anova_model_state)
+supernova(anova_model_state)
+```
+
+## Interpretation
+
+In our findings, when looking at the sum of squares, we can see that there is a small amount of variance related to the different states. The F-value (14.709) is small, and the p-value (\<2e-16) conveys that the difference is statistically significant. 0.77% of the variance is explained, conveying how little of the variation in payment amount is related to the different states. I would not recommend the law firm to use states in their marketing strategy because of how small the variation and f-value is, even though it is statistically significant.
+
+## County
+
+```{r}
+#| label: cleaning-county-data
+#| message: false
+#| warning: false
+#| paged-print: true
+camera<- camera %>% 
+  mutate(
+    county_clean= str_replace(county, "Q", "Queens County"),
+    county_clean= str_replace(county_clean, "K", "Kings County")
+  )
+```
+
+```{r}
+#| message: false
+#| label: fig-counties-and-payment-amount
+#| warning: false
+#| paged-print: true
+#| fig-cap: "This is supposed to be a boxplot showing the different payment amounts across counties."
+#| fig-alt: "This is supposed to be a boxplot showing the different payment amounts across counties."
+ggplot(camera, aes(x = county_clean, y = payment_amount)) + geom_boxplot() + labs(
+  title= "County and Payment Amount",
+  x = "County",
+  y = "Payment Amount")+ theme_minimal() + coord_flip()
+```
+
+```{r}
+#| label: stats-of-payment-amount-and-clean-county-data
+#| message: false
+#| warning: false
+#| paged-print: true
+favstats(payment_amount ~ county_clean, data=camera) %>% arrange(desc(mean))
+```
+
+```{r}
+#| label: tbl-anova_model_county
+#| message: false
+#| warning: false
+#| paged-print: true
+anova_model_county<- aov(payment_amount ~ county_clean, data=camera)
+summary(anova_model_county)
+supernova(anova_model_county)
+```
+
+\*\* Interpretation\*\*
+
+In our findings, when looking at the sum of squares, we can see that there is a small amount of variance related to the different counties. The F-value (116.726) is large, and the p-value (\<2e-16) conveys that the difference is statistically significant. 2.34% of the variance is explained, conveying that there is some variation in payment amount that is related to the the different counties. I would recommend the law firm to use the the different counties in their marketing strategy because of the large F-value as well as the variance that is related to payment amount.
+
+## Final
+
+I think that the firm should prioritize the different counties in its marketing efforts. The reason is because out of the 3 variables (agency, state, and county), county is the variable that has the largest f-value, as well as the most variation that is related to payment amount compared to the other 2 variables.

@@ -1,0 +1,146 @@
+---
+title: "Wage Analysis"
+---
+:::{callout-note}
+## Note
+Even though the logistic regression model I ran was weak, it was good to run it to see how impactful some variables are in a data set.
+:::
+
+## Introduction
+
+The purpose of this chapter was to create a logistic regression model that predicts wage level (high or low) using factors such as demographics, jobs, and marital status. I ran various tests such as ANOVA, t-test, and chi-square test to help understand and look at the relationships between different variables.
+
+## Creating the WageCategory Variable
+
+```{r}
+#| label: getting-the-dataset-ready
+#| message: false
+#| warning: false
+#| paged-print: false
+library(ISLR2)
+library(tidyverse)
+library(skimr)
+
+data(Wage)
+summary(Wage)
+View(Wage)
+
+median_wage<- median(Wage$wage)
+median_wage
+Wage$WageCategory<- factor(
+  ifelse(Wage$wage > median_wage, "High", "Low"),
+  levels = c("Low", "High")
+)
+Wage$WageCategory<- factor(Wage$WageCategory)
+```
+
+## Data Cleaning
+
+```{r}
+#| label: cleaning-the-data
+#| message: false
+#| warning: false
+#| paged-print: false
+
+Wage$race<-factor(gsub("^\\d+\\.\\s*","", as.character(Wage$race))) 
+```
+
+## Classical Statistical Tests
+
+### T-test
+
+```{r}
+#| label: t-test
+#| message: false
+#| warning: false
+#| paged-print: false
+age_t_test<- t.test(age ~ WageCategory, data=Wage)
+age_t_test
+```
+
+The mean age for Low wage earners is 40.19512, and for High wage earners, it's 44.68510. The t-statistic is -10.888, the df is 2855, and the p-value is less than 0.05, making it statistically significant. This means that age does differ between wage categories.
+
+### Anova
+
+```{r}
+#| label: ANOVA
+#| message: false
+#| warning: false
+#| paged-print: false
+library(supernova)
+wage_anova<- aov(wage ~ education, data=Wage)
+wage_anova
+supernova(wage_anova)
+```
+
+The ANOVA table shows us that the F-statistics is 229.806, the df is 4, and the p-value is less than 0.05, making it statistically significant. This test shows us that there is a statistically significant difference between wage and education.
+
+### Chi-Square Tests
+
+```{r}
+#| label: chi-square-test
+#| message: false
+#| warning: false
+#| paged-print: false
+library(rcompanion)
+wage_cont_table<- table(Wage$wage, Wage$education)
+wage_cont_table %>% head(10)
+chisq.test(wage_cont_table)
+cramerV(wage_cont_table)
+```
+
+The x\^2 is 2848.6, the df is 2028, the p-value is less than 0.05, showing that the relationship is statistically significant. The Cramer's V is 0.4872, meaning that there is a moderate effect size between the relationship with wage and marital status.
+
+## Logistic Regression Model
+
+```{r}
+#| label: logistic-regression-model
+#| message: false
+#| warning: false
+#| paged-print: false
+library(caTools)
+wage_sample<- sample.split(Wage$WageCategory, SplitRatio= 0.7)
+wage_training_data<- subset(Wage, sample=T)
+wage_testing_data<- subset(Wage, sample=F)
+wage_model<- glm(WageCategory ~ education + age + jobclass + maritl,
+                 family= "binomial", data=wage_training_data)
+summary(wage_model)
+exp(coef(wage_model))
+
+library(pscl)
+pR2(wage_model)["McFadden"]
+
+library(caret)
+varImp(wage_model) %>% arrange(desc(Overall))
+```
+
+This regression model conveys that Hs Grad, Some College, College Grad, Advanced Degree, age, and married individuals are statistically significant when looking at the relationship with WageCategory. Jobclass isn't statistically signficant when looking at its relationship with WageCategory. Looking at the odds ratios, we can see that individuals who are college grads for example, have 10.63x the odds of having a high or low wage. One surprising result is the odd ratio for Advanced Degree, which is 23.62, making it the largest ratio among the variables. Looking at the "McFadden", we can see that this model is kind of weak (0.195) and doesn't explain a lot of variation. We can also see that education, specifically Advanced Degree is the most impactful variable.
+
+## Model Evaluation
+
+```{r}
+#| label: evaluating-the-logistic-model
+#| message: false
+#| warning: false
+#| paged-print: false
+wage_testing_data$pred_prob<- predict(wage_model, newdata = wage_testing_data, type = "response")
+wage_testing_data$pred_class<- ifelse(wage_testing_data$pred_prob > 0.5, "High", "Low") %>% as.factor()
+View(wage_testing_data)
+
+library(car)
+library(caret)
+confusionMatrix(wage_testing_data$pred_class, wage_testing_data$WageCategory)
+
+library(pROC)
+roc_wage<- roc(wage_testing_data$WageCategory, wage_testing_data$pred_prob, levels= c("High", "Low"))
+roc_wage
+auc(roc_wage)
+plot(roc_wage, col = "darkblue", lwd = 2,
+     main = "ROC Curve – Logistic Regression")
+```
+
+After computing the predicted probabilities and classes and confusion matrix, we can see that the accuracy is 68.67%, the sensitivity is 67.53%, the specificity is 69.86%, and the balanced accuracy is 68.70%. The AUC value is 0.7795, which is good. Our model is also statistically significant.
+
+## Final Interpretation
+
+A logistic regression was conducted to examine whether variables such as age, jobclass, education, or marital status predicted wage level (High or Low). The model was statistically significant, with an accuracy of 68.67%. Our findings convey that education relates to wage the most, and is also a significant predictor in the logistic regression. Married marital status is also significant predictor in the logistic regression. This model best predicts the low wage group. If I repeated this analysis, I would remove the jobclass variable.

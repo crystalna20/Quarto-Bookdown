@@ -1,0 +1,7 @@
+# Final Reflection
+
+Overall, throughout this semester I learned a lot about R and how to work with data. I learned how to import data, clean it, run statistical tests such as t-tests, chi-square, ANOVAs, linear regression, and more. I explored many different packages and also calculated correlations, logistic regression and categorical analysis. I also learned how to create a shiny app.
+
+Something I found a bit challenging during the course was creating a function, but after some time I started understanding it better. 
+
+The thing I'm most proud about is the progress I've made throughout the course and how I now know how to import, clean and analyze data. When I started this class, I didn't really know anything about R and analyzing data. Now I am able to create r scripts that analyze data sets. My confidence definitely increased over the course of the semester, and I have learned a lot of skills. 

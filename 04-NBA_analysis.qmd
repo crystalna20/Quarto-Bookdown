@@ -1,0 +1,172 @@
+---
+title: "NBA Analytics"
+---
+:::{callout-important}
+## Important
+Using the ggcorrplot function was a big help to convey multiple correlations in one figure to help see which variables had the strongest correlations.
+:::
+
+## Introduction
+
+The purpose of this chapter was to examine if there is a relationship between west and east coast teams. looked at some stats from teams such as point, rebounds, assists, steals, and blocks and examined if there were any correlations between east and west coast teams.
+
+## Loading and Preparing the Data
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+#| label: loading-libraries-and-preparing-the-data
+library(readxl)
+library(tidyverse)
+NBA_teams<- read_xlsx("NBA Team Total Data 2024-2025.xlsx")
+View(NBA_teams)
+
+loading_teams<- function(file_name,team_name,sheet_name,PRA, Stocks){
+  team_data<- read_xlsx(file_name, sheet=sheet_name)
+  team_data$Team<- team_name
+  team_data$Sheet<- sheet_name
+  team_data$PRA<- rowSums(team_data[, c("PTS", "ORB", "AST")], na.rm=TRUE)
+  team_data$Stocks<- rowSums(team_data[, c("STL", "BLK")], na.rm=TRUE)
+  team_data$Won_award<-ifelse(is.na(team_data$Awards),"0","1")
+  return(team_data)
+}
+team_warrior<- loading_teams("NBA Team Total Data 2024-2025.xlsx", "Warriors", "Warriors", "PRA", "Stocks")
+team_warrior
+
+getwd()
+path<- "/Users/crystaladote/Downloads/Reproducible Psyc Fall 2025/NBA Team Total Data 2024-2025.xlsx"
+file.exists(path)
+team_sheets<- excel_sheets(path)
+team_sheets
+
+
+file_name <- "/Users/crystaladote/Downloads/Reproducible Psyc Fall 2025/NBA Team Total Data 2024-2025.xlsx"
+team_sheets <- excel_sheets(file_name)
+
+all_teams <- bind_rows(
+  lapply(team_sheets, function(sheet_name) {
+    loading_teams(file_name = file_name, team_name = sheet_name, sheet_name = sheet_name)
+  })
+)
+View(all_teams)
+
+```
+
+## Adding Conference Information
+
+```{r}
+#| message: true
+#| warning: true
+#| label: adding-team-conferences
+team_conference<- read_excel("Team Conferences.xlsx")
+View(team_conference)
+full_team_data<- merge(all_teams, team_conference)
+View(full_team_data)
+full_team_data<- full_team_data %>% 
+  mutate(
+    Conference= case_when(
+     Conference== "East" ~ 1,
+     Conference== "West" ~ 0
+    )
+  )
+```
+
+## Visual Exploration
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+#| label: fig-looking-at-relationship-between-PRA-and-Stocks
+#| fig-cap: "This scatter plot shows us the relationship between PRA and Stocks."
+library(ggplot2)
+ggplot(full_team_data, aes(x=PRA, y=Stocks, color=Conference))+
+  geom_point()+
+  labs(
+    title= "Relationship between PRA and Stocks",
+    x= "PRA",
+    y= "Stocks"
+  )
+```
+
+This scatter plot shows us that for both conferences (East and West), there is a positive relationship between PRA and Stocks.
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+#| label: fig-looking-at-the-relationship-between-defensive-rebounds-and-steals
+#| fig-cap: "This scatter plot shows the relationship between defensive rebounds and steals."
+ggplot(full_team_data, aes(x=DRB, y=STL, color= Conference)) +
+  geom_point()+
+  labs(
+    title= "Relationship between Defensive Rebounds and Steals",
+    x= "Defensive Rebounds",
+    y= "Steals"
+  )
+```
+
+The scatter plot shows us that there is a positive relationship with defensive rebounds and steals for both East and West.
+
+## Correlation Analysis
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+#| label: correlation-between-PRA-and-team-confrerences
+cor.test(full_team_data$PRA, full_team_data$Conference)
+```
+
+There is a negative, weak correlation between PRA and Conference (-0.070). This correlation is not statistically significant, given that it has a p-value of 0.073.
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+#| label: correlation-between-Stocks-and-team-conferences
+cor.test(full_team_data$Stocks, full_team_data$Conference)
+```
+
+There is a negative,weak correlation between Stocks and Conference (-0.0818). However, this correlation is statistically significant, with a p-value of 0.036.
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+#| label: correlations-between-Age-PRA-and-Stocks
+library(ggcorrplot)
+stats_matrix<- full_team_data %>% dplyr::select(Age, PRA, Stocks)
+APS_matrix<- cor(stats_matrix, use="pairwise.complete.obs")
+APS_matrix
+```
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+#| label: fig-of-the-correlation-between-Age-PRA-and-Stocks
+#| fig-cap: "This figure looks at the correlation matrix that includes age"
+ggcorrplot(APS_matrix, lab=TRUE, type="lower")+
+  labs(title="Correlation Matrix: Age, PRA, and Stocks")
+```
+
+The relationship between PRA and Stocks is the strongest, with a positive correlation of 0.82. It is the closest out of all 3 correlations to 1.
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+#| label: partial-correlation-between-PRA-and-Stocks
+library(ppcor)
+pcor.test(full_team_data$PRA, full_team_data$Stocks, full_team_data$Age)
+```
+
+Controlling for the variable Age conveys that there is a strong positive correlation between PRA and Stocks (0.81695). Meaning that age doesn't much effect on those 2 variables. It also shows us that it is statistically significant due to the p-value.
+
+## Findings
+
+To Mr. Silver,
+
+According to the findings, and correlations there doesn't appear to be a difference between the East and West teams, especially regarding PRA (points, rebounds, and assists) and Stocks (steals and blocks). We also saw that there is a strong, positive correlation between PRA and Stocks when Age was controlled, conveying that age doesn't have an effect on either variables. One scatter plot showed the relationship between defensive rebounds and steals conveying that offensive and defensive performances tend to move together. The scatter plot conveys a positive, somewhat strong correlation between the two variables. One potential next step for when analyzing this data could be to look at the relationship between the 2-point and 3-point averages and possibly field goal average. One limitation of my analysis would be that the weak correlations that were observed could possibly be due to other factors that aren't in the data.

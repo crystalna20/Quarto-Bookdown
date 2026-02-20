@@ -1,0 +1,157 @@
+---
+title: "Streaming Analysis"
+---
+:::{callout-important}
+## Important
+The use of a pheatmap in this chapter was very helpful with conveying which cell contributed the most to the chi-square test.
+::: 
+
+## Introduction
+
+The purpose of this chapter was to examine the relationship between streaming platforms and age groups. I ran a chi-square test, and created bar graphs to examine the relationships.
+
+## Data Preparation
+
+```{r}
+#| label: retreiving-the-dataset
+#| message: false
+#| warning: false
+#| paged-print: false
+library(readxl)
+library(skimr)
+library(dplyr)
+streaming_and_age<- read_xlsx("Streaming Services and Age.xlsx")
+View(streaming_and_age)
+age_count<- streaming_and_age %>% group_by(AgeCat) %>% summarize(count=n())
+age_count
+platform_count<- streaming_and_age %>% group_by(Platform) %>% summarize(count=n())
+platform_count
+cont_table<- table(streaming_and_age$AgeCat, streaming_and_age$Platform)
+cont_table
+```
+
+## Visualization
+
+```{r}
+#| label: fig-grouped_streaming
+#| message: false
+#| warning: false
+#| fig-cap: This stacked bar graph shows the different age groups and the streaming platforms they use.
+#| paged-print: false
+library(ggplot2)
+library(ggthemes)
+
+grouped_streaming<- ggplot(streaming_and_age, aes(x = AgeCat, fill = Platform)) +
+  geom_bar(position = "fill") +   
+  labs(
+    title = "Proportion of Platform Preferences by Age Group",
+    y = "Proportion of Platforms",
+    x = "Age"
+  ) +
+  theme_economist()
+grouped_streaming
+```
+
+```{r}
+#| label: fig-clustered_streaming
+#| message: false
+#| warning: false
+#| fig-cap: This is a clustered bar graph that shows the percentage of streaming platforms each age group uses.
+#| paged-print: false
+clustered_streaming<- ggplot(streaming_and_age, aes(x = AgeCat, fill = Platform)) +
+  geom_bar(position = "dodge") +
+  geom_text(
+    stat = "count",                          
+    aes(label = after_stat(count)),          
+    position = position_dodge(width = 0.9),   
+    vjust = -0.3,                        
+    size = 4
+  ) +
+  labs(
+    title = "Percentage of Age Groups with Streaming Platforms",
+    x = "Age",
+    y = "Count of Platform",
+    fill = "Streaming Platform"
+  ) +
+  theme_solarized()
+clustered_streaming
+```
+
+## Chi-Square Test
+
+```{r}
+#| label: chi-square-test
+#| message: false
+#| warning: false
+#| paged-print: false
+chisq.test(cont_table)
+streaming_chi_test<- chisq.test(cont_table)
+streaming_chi_test
+```
+
+The Chi-Square test statistic is 68.044. The Degrees of Freedom is 8, and the p-value is less than 0.05, making it statistically significant relationship between age and platform.
+
+## Observed, Expected, and Residual Values
+
+```{r}
+#| label: looking-more-closely-at-the-chi-square-test
+#| message: false
+#| warning: false
+#| paged-print: false
+streaming_chi_test$observed
+streaming_chi_test$expected
+streaming_chi_test$residuals
+```
+
+After running 3 tables from the Chi-Square we can see that older viewers prefer Amazon more than expected. The difference between the observed and expected is the largest out of all other combinations.
+
+Other combinations which show more people than expected are 18-25 year olds with Disney+, Hulu, and Netflix. 26-40 year olds with Disney+, Hulu, and Netflix and 41+ year olds with Other.
+
+Combinations which show fewer people than expected are 18-25 year olds with Amazon and Other platforms. 26-40 year olds with Amazon and Other platforms as well. 41+ year olds with Disney +, Hulu, and Netflix.
+
+## Contributions to the Chi-Square Statistic
+
+```{r}
+#| label: looking-at-more-contributions-to-the-chi-square-test
+#| message: false
+#| warning: false
+#| paged-print: false
+streaming_contributions<- ((streaming_chi_test$observed-streaming_chi_test$expected)^2)/streaming_chi_test$expected
+streaming_contributions
+
+streaming_percent_con<- streaming_contributions / streaming_chi_test$statistic*100 
+streaming_percent_con
+```
+
+```{r}
+#| label: fig-pheatmap-streaming-platforms
+#| message: false
+#| warning: false
+#| fig-cap: This is a pheatmap that shows the percentage of ages groups and how much they use each streaming platform.
+#| paged-print: false
+library(pheatmap)
+pheatmap(streaming_percent_con,
+         display_numbers = TRUE,
+         cluster_rows = FALSE,
+         cluster_cols = FALSE,
+         main = "% Contribution to Chi-Square Statistic")
+```
+
+Looking at our pheatmap, we can see that the cells that contributed the most to the overall Chi-Square are the 41+ age group with Amazon, and the 18-25 age group with Amazon as well. This finding could suggest that Amazon is becoming a platform that individuals of all ages are starting to use more than expected.
+
+## Effect Size
+
+```{r}
+#| label: looking-at-the-effect-size
+#| message: false
+#| warning: false
+#| paged-print: false
+library(rcompanion)
+cramerV(cont_table)
+```
+
+After running Cramer's V, we see that there is a moderate effect size. Conveying that there is a moderate effect between the relationship with Age and Platform preference.
+
+## Final Interpretation
+
+The Chi-Square test shows that there is a significant relationship between age and platform preference, X\^2(8, N=300) =68.044. The 2 largest contributions came from the 41+ year old and 18-25 year old age group both with Amazon. The Cramer's V = 0.3368 which indicates that there is a moderate effect between the relationship with age and platform. These results could mean that all age groups are starting to like/enjoy Amazon a lot, and with these findings, this streaming platform could know how to tailor their content to their all their viewers.

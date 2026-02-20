@@ -1,0 +1,167 @@
+---
+title: "Florida Crime Analytics"
+---
+
+:::{callout-important}
+## Important
+It is important to remember that correlation doesn't equal causation. 
+:::
+
+## Introduction 
+
+The purpose of this chapter was to examine crime in Florida. I looked at 3 variables; income, education, and urbanization to see which one plays the largest role in explaining the differences in crime rates.
+
+## Loading and Preparing the Data
+
+```{r}
+#| label: loading-the-dataset
+#| message: false
+#| warning: false
+#| paged-print: false
+library(readxl)
+library(tidyverse)
+library(dplyr)
+
+
+florida_crime<- read_xlsx("Florida County Crime Rates.xlsx")
+View(florida_crime)
+
+florida_crime<- florida_crime %>% rename(Crime = C, Income= I, HighSchoolGrad = HS, UrbanPop = U)
+
+florida_crime$County<- str_to_title(florida_crime$County)
+
+str(florida_crime)
+```
+
+## Exploratory Data Analysis
+
+```{r}
+#| label: income-and-crime-relationship
+#| message: false
+#| warning: false
+#| fig-cap: This scatter plot looks at the relationship between crime and income in Florida.
+#| paged-print: false
+library(mosaic)
+library(ggplot2)
+summary(florida_crime)
+
+scatter_florida<- ggplot(florida_crime, aes(x=Income, y=Crime)) +
+  geom_point()+
+  labs(
+    title = "Income and Crime",
+    x = "Income",
+    y="Crime"
+  )+ 
+  theme_dark()
+scatter_florida
+```
+
+This scatterplot conveys that as the Income increases, the crime rate slowly increases as well.
+
+```{r}
+#| label: fig-histogram_florida
+#| message: false
+#| warning: false
+#| fig-cap: This histogram shows the range of individuals incomes in Flordia.
+#| paged-print: false
+hist_florida<- ggplot(florida_crime, aes(x=Income)) +
+  geom_histogram()+
+  labs(
+    title = "Florida Income",
+    x = "Income",
+    y = "Count"
+  )+ 
+  theme_minimal()
+hist_florida
+```
+
+This histogram shows us that many individuals income is between \$21,000 - \$30,000 in across the state of Florida.
+
+## Correlation Analysis
+
+```{r}
+#| label: fig-florida_crime_correlation_matrix
+#| message: false
+#| warning: false
+#| paged-print: false
+library(ggcorrplot)
+florida_matrix<- florida_crime %>% dplyr::select(Crime, Income, HighSchoolGrad, UrbanPop)
+florida_crime_matrix<- cor(florida_matrix, use="pairwise.complete.obs")
+florida_crime_matrix
+```
+
+```{r}
+#| label: fig-florida-crime-matrix
+#| message: false
+#| warning: false
+#| fig-cap: This figure is a correlation matrix that shows the relationships between high school graduation rate
+#| paged-print: false
+ggcorrplot(florida_crime_matrix, lab=TRUE, type="lower")+
+  labs(title="Correlation Matrix: Florida Crime")
+```
+
+The variable that shows the strongest relationship with Crime is UrbanPop (0.68). All variables have positive relationships, however, some are stronger than others.
+
+The relationship between HighSchoolGrad and UrbanPop is 0.79 which is one of the strongest, positive correlations among all the variables. The relationship between HighSchoolGrad and Income is also 0.79, which makes it another strong, positive correlation.
+
+The relationship between Income and UrbanPop is 0.73, making it another strong, positive correlation. The relationship between Crime and HighSchoolGrad is 0.47, making it a moderate, positive correlation. The relationship between Crime and Income is 0.43, making it another moderate, positive correlation.
+
+## Building Regression Models
+
+```{r}
+#| label: linear-regressions-between-variables
+#| message: false
+#| warning: false
+#| paged-print: false
+library(broom)
+flordia_lm<- lm(Crime ~ UrbanPop, data = florida_crime)
+flordia_lm
+summary(flordia_lm)
+tidy(flordia_lm)
+
+florida_lm2<- lm(Crime ~ HighSchoolGrad, data=florida_crime)
+florida_lm2
+summary(florida_lm2)
+tidy(florida_lm2)
+
+florida_lm3<- lm(Crime ~ Income, data=florida_crime)
+florida_lm3
+summary(florida_lm3)
+tidy(florida_lm3)
+
+
+florida_m1<- lm(Crime ~ Income+HighSchoolGrad, data = florida_crime)
+florida_m1
+glance(florida_m1)
+tidy(florida_m1)
+
+florida_m2<- lm(Crime ~ Income+UrbanPop, data=florida_crime)
+florida_m2
+glance(florida_m2)
+tidy(florida_m2)
+
+florida_m3<- lm(Crime ~ HighSchoolGrad+Income + UrbanPop, data = florida_crime)
+florida_m3
+glance(florida_m3)
+tidy(florida_m3)
+
+florida_m4<- lm(Crime ~ UrbanPop + HighSchoolGrad, data=florida_crime)
+florida_m4
+summary(florida_m4)
+tidy(florida_m4)
+glance(florida_m4)
+
+library(AICcmodavg)
+AIC(florida_m1, florida_m2, florida_m3, florida_m4)
+
+library(modelsummary)
+modelsummary(list(florida_m1, florida_m2, florida_m3, florida_m4))
+```
+
+When running the simple regression, we can see that UrbanPop is the most influential predictor. The reason is because it has the most shared variance with Crime (45.88%) compared to the other variables. HighSchoolGrad could also be a somewhat influential predictor, with a shared variance of 21.8% with Crime.
+
+When running a multiple regression, one model that seems to balance accuracy and simplicity would be the one with both UrbanPop and HighSchoolGrad as predictors for Crime. The AIC is the lowest out of the 4 multiple regression models (601.8526).
+
+## Communicate Your Findings
+
+I would say that the best model for predicting crime rates would be the simple regression model with UrbanPop as the most influential predictor. This model explains 45.88% of the shared variance with the variable Crime. One recommendation for where the PD should focus its resources would be in Urban communities and possibly High Schools, to help steer/keep individuals on the right path. One limitation in my analysis would be how correlation doesn't equal causation. This means that just because Crime and UrbanPop have a strong correlation when looking at which factors are correlated with Crime, doesn't mean that UrbanPop causes Crime.

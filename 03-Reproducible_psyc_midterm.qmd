@@ -1,0 +1,255 @@
+---
+title: "Sleep Exercise Analysis"
+---
+:::{callout-note}
+## Note 
+The visuals used in this chapter are helpful with seeing the relationships between the different variables.
+:::
+
+## Introduction
+
+The purpose of this chapter was to examine a sleep exercise data set and clean it up and analyze it. I ran various tests such as a t-test, ANOVA and post-hoc.
+
+## Setup & Data import
+
+```{r}
+#| label: loading-libraries
+#| message: false
+#| warning: false
+#| paged-print: false
+library(tidyverse)
+library(readxl)
+library(knitr)
+library(mosaic)
+library(ggplot2)
+library(supernova)
+library(AICcmodavg)
+```
+
+```{r}
+#| label: pulling-up-data
+#| message: false
+#| warning: false
+#| paged-print: false
+sleep_exercise_info <- read_excel("midterm_sleep_exercise.xlsx", 
+    sheet = "participant_info_midterm")
+View(sleep_exercise_info)
+sleep_exercise_data <- read_excel("midterm_sleep_exercise.xlsx", 
+    sheet = "sleep_data_midterm")
+View(sleep_exercise_data)
+glimpse(sleep_exercise_info)
+glimpse(sleep_exercise_data)
+```
+
+We have both data sets and are now ready to clean and analye our data.
+
+## Merge and Base Cleaning
+
+```{r}
+#| label: cleaning-dataset
+#| message: false
+#| warning: false
+#| paged-print: false
+clean_exercise_group<- sleep_exercise_info %>% 
+  mutate(Exercise_Group = case_when(
+    Exercise_Group %in% c("cardio", "CARDIO", "C") ~ "Cardio",
+    Exercise_Group %in% c("WEIGHTS", "WEIGHTSSS", "WEIGHTZ") ~ "Weights",
+    Exercise_Group %in% c("CW", "C+W") ~ "Cardio+Weights",
+    Exercise_Group %in% c("Nonee", "NONE", "N") ~ "None",
+    TRUE ~ Exercise_Group
+  ))
+View(clean_exercise_group)
+clean_sex_label <- sleep_exercise_info %>% 
+  mutate(Sex = case_when(
+    Sex %in% c("F", "Fem", "Femalee") ~ "Female",
+    Sex %in% c("M", "MALE", "Mal", "Malee") ~ "Male",
+    TRUE ~ Sex
+  ))
+View(clean_sex_label)
+exercise_group_data <- merge(clean_exercise_group, clean_sex_label)
+View(exercise_group_data)
+clean_sleep_data<- merge(exercise_group_data, sleep_exercise_data)
+View(clean_sleep_data)
+```
+
+I was able to clean up the data in the Exercise group and Sex column in the sleep_exercise_info data set. Now the words in those columns are standardized. I also merged both data sets together.
+
+## Create Derived Variables
+
+```{r}
+#| label: creating-variables
+#| message: false
+#| warning: false
+#| paged-print: false
+clean_sleep_data <- clean_sleep_data %>%
+  mutate(
+    pre_sleep_num = as.numeric(gsub("[^0-9.]", "", Pre_Sleep))
+  )
+clean_sleep_data <- clean_sleep_data %>% 
+  mutate(Sleep_Difference = clean_sleep_data$Post_Sleep - clean_sleep_data$pre_sleep_num)
+
+clean_sleep_data <- clean_sleep_data %>%  
+  mutate(
+    AgeGroup2 = case_when(
+      Age < 40 ~ "40",
+      Age >= 40 ~ "40+"
+    )
+  )
+clean_sleep_data %>%filter(is.na(Sleep_Difference))
+clean_sleep_data %>% filter(!is.na(Sleep_Difference))
+```
+
+I created a new column and called it pre_sleep_num to make the Pre_Sleep column just numeric, without any of the characters. After making it numeric, I was able to create a derived variable called sleep_difference which was the scores from post_sleep minus the scores from pre_sleep. I also created a variable called Age_Group\_ which conveyed whether participants were either 40 years old or younger, and 40+ years old. I also ran the is.na function to drop the rows in the Sleep_difference column
+
+## Descriptive Statistics
+
+```{r}
+#| label: descriptive-statistics
+#| message: false
+#| warning: false
+#| paged-print: false
+favstats(clean_sleep_data$Sleep_Difference)
+favstats(clean_sleep_data$Sleep_Efficiency)
+
+clean_sleep_data %>% 
+  group_by(Exercise_Group) %>%
+  summarise(
+    mean_sleep_difference = mean(Sleep_Difference, na.rm = TRUE)
+  )
+clean_sleep_data %>% 
+  group_by(Exercise_Group) %>% 
+  summarise(
+    mean_sleep_efficiency = mean(Sleep_Efficiency, na.rm = TRUE)
+  )
+```
+
+```{r}
+#| label: tbl-clean-_sleep_data
+#| message: false
+#| warning: false
+#| paged-print: false
+kable(clean_sleep_data, caption = "Table showing the cleaned up sleep data.")
+```
+
+I did some descriptive statistics to look at the mean, min, max, and sd for Sleep_difference and Sleep_efficiency. I also looked at the group means by Exercise Group for Sleep_difference and Sleep_efficiency.
+
+## Visualization
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+#| label: fig-sleep_difference_and_exercise_group
+#| fig-cap: "This is a box plot that shows the relationship between sleep difference and exercise group."
+ggplot(clean_sleep_data, aes(x = Exercise_Group, y = Sleep_Difference)) + 
+  geom_boxplot() + 
+  labs(
+    title = "Relationship between Sleep Difference and Exercise Group", 
+    x = "Exercise Group",
+    y = "Sleep Difference"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+#| label: fig-sleep_efficiency_and_exercise_group
+#| fig-cap: "This is a boxplot that looks at the relationship between sleep efficiency and exercise group."
+ggplot(clean_sleep_data, aes(x = Exercise_Group, y = Sleep_Efficiency)) + 
+  geom_boxplot() + 
+  labs(
+    title = "Relationship between Sleep Efficiency and Exercise Group",
+    x = "Exercise Group",
+    y = "Sleep Efficiency"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| message: false
+#| warning: false
+#| paged-print: false
+#| label: fig-sleep_difference_and_efficiency
+#| fig-cap: "This is a scatterplot to look at the relationship between sleep efficiency and sleep difference."
+
+ggplot(clean_sleep_data, aes(x = Sleep_Difference, y = Sleep_Efficiency)) + 
+  geom_point() + 
+  geom_smooth(method="lm") +
+  labs(
+    title = "Relationship between Sleep Difference and Efficiency",
+    x = "Sleep Difference",
+    y = "Sleep Efficiency"
+  ) + 
+  theme_classic()
+```
+
+I created 3 plots, the first 2 were box plots that showed the relationship between Sleep_difference and Exercise group, and Sleep_efficiency and Exercise group. The last one was a scatterplot to look at the relationship between Sleep_efficiency and Sleep_difference.
+
+## T-Tests
+
+```{r}
+#| label: t-test-sleep-difference-and-sex
+#| message: false
+#| warning: false
+#| paged-print: false
+ind_t_test_sex<- t.test(Sleep_Difference ~ Sex, data = clean_sleep_data)
+ind_t_test_sex
+```
+
+The mean for the female group is 0.8566667, and the mean for the male group is 0.5583333. The p-value is 0.0938, making the differences not statistically significant.
+
+```{r}
+#| label: t-test-sleep-difference-and-age-group
+#| message: false
+#| warning: false
+#| paged-print: false
+ind_t_test_age<- t.test(Sleep_Difference ~ AgeGroup2, data = clean_sleep_data)
+ind_t_test_age
+```
+
+The mean for age group 40 is 0.7243902, and the mean for group 40+ is 0.7230769. The p-value is 0.9944, making the difference not statistically significant.
+
+I ran independent t-tests for Sleep_difference and sex, and another one for Sleep_difference by AgeGroup2.
+
+## Anovas + Post-Hocs
+
+```{r}
+#| label: tbl-anova_sleep_difference
+#| message: false
+#| warning: false
+#| paged-print: false
+anova_sleep_difference<- aov(Sleep_Difference ~ Exercise_Group, data = clean_sleep_data)
+summary(anova_sleep_difference)
+supernova(anova_sleep_difference)
+TukeyHSD(anova_sleep_difference)
+plot(TukeyHSD(anova_sleep_difference))
+```
+
+The F-value is 19.1, the df are 2 and 51, the p-value is .0000, the PRE is 42.82%. Looking at the adjusted p-values, None-Cardio and None-Cardio+Weights are the 2 groups that are statistically significant.
+
+```{r}
+#| label: tbl-anova_sleep_efficiency
+#| message: false
+#| warning: false
+#| paged-print: false
+
+anova_sleep_efficiency<- aov(Sleep_Efficiency ~ Exercise_Group, data = clean_sleep_data)
+summary(anova_sleep_efficiency)
+supernova(anova_sleep_efficiency)
+TukeyHSD(anova_sleep_efficiency)
+plot(TukeyHSD(anova_sleep_efficiency))
+```
+
+The F-value is 5.648, the df are 2 and 58, the p-value is 0.0057, the PRE is 16.30%. Looking at the adjusted p values, None-Cardio and None-Cardio+Weights are the 2 statistically significant groups.
+
+I ran 2 ANOVAs, one for Sleep_difference and Exercise group, and the other for Sleep_efficiency and Exercise group. I also ran a Tukey post-hoc test for both ANOVAs.
+
+## Synthesis & Recommendation
+
+Considering both outcomes (Sleep Difference and Sleep Efficiency) of the anova and post-hoc tests, I would recommend cardio and weights as the exercise regimen to improve overall sleep. The reason for this is because in both the post-hoc tests we can see that cardio+weights-cardio has the smallest difference compared to the other 2 combinations in both tests. Although in the sleep efficiency \~ exercise group post-hoc test the difference between cardio+weights and none is the largest out of the 3 combinations (-5.9478469), it looks like 'None' is causing the difference to be large, and not cardio+weight. In the sleep difference \~ exercise group post-hoc test, none - cardio have the largest negative difference out of the the 3 combinations (-1.0343860), with none - cardio+weights having the second largest (-0.7383333), and cardio+weights - cardio having the smallest difference (-0.2960526), conveying that cardio+weight must be the exercise regimen that helps to improve overall sleep. We could also see the differences and their sizes in the plot of the Tukey post-hoc test above.
+
+## Reflection
+
+One challenging thing for me while creating this report was trying to clean the pre_sleep column and just make it numeric, without any characters. One thing I was confident about was cleaning and merging the data, as well as conducting descriptive statistics. Next time, I would like to try to improve on cleaning specific columns like what I had to do with the pre_sleep column.
