@@ -6,18 +6,17 @@ book:
   author: "Crystal Adote"
   date: "2/19/2026"
   chapters:
-    - NYC NYPD Shooting data.qmd
-    - Continuing the Law Firm Analysis.qmd
-    - Reproducible psyc Midterm.qmd
-    - NBA analysis.qmd
-    - Florida analysis.qmd
-    - Streaming analysis.qmd
-    - Wage analytics.qmd
-    - Shiny app exploration.qmd
+    - intro.qmd
+    - 01-NYC-NYPD-Shooting-data.qmd
+    - 02_Continuing-the-Law-Firm-Analysis.qmd
+    - 03-Reproducible_psyc_midterm.qmd
+    - 04-NBA_analysis.qmd
+    - 05-Florida_Crime_Analytics.qmd
+    - 06-Streaming_Analysis.qmd
+    - 07-Wage_Analytics.qmd
+    - 08-shiny?app exploration.qmd
     - Final reflection.qmd
-    - References. qmd
 
-bibliography: references.bib
 
 format:
   html:

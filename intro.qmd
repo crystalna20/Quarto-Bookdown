@@ -1,0 +1,3 @@
+# About this book
+
+This is a book created from markdown and executable code. It includes different chapters examining and analyzing many different data sets from nycOpenData. Many different statistical tests, tables, and graphs for visuals are also used to analyze the data sets as well.[![](images/reproducible%20img.jpeg){width="339"}](https://www.google.com/imgres?q=reproducibility&imgurl=https%3A%2F%2Fmindthegraph.com%2Fblog%2Fwp-content%2Fuploads%2F2023%2F03%2Fblog-6.png&imgrefurl=https%3A%2F%2Fmindthegraph.com%2Fblog%2Freproducibility%2F&docid=oWlDZeYCQbhEtM&tbnid=b8blb6S_tBGbBM&vet=12ahUKEwi38ZH19-aSAxWSFFkFHZhyBygQnPAOegQITxAB..i&w=1124&h=613&hcb=2&ved=2ahUKEwi38ZH19-aSAxWSFFkFHZhyBygQnPAOegQITxAB)

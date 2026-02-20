@@ -4,6 +4,4 @@ This is a Quarto book.
 
 To learn more about Quarto books visit <https://quarto.org/docs/books>.
 
-## About this book
-
-This is a book created from markdown and executable code. It includes different chapters examining and analyzing many different data sets from nycOpenData. Many different statistical tests, tables, and graphs for visuals are also used to analyze the data sets as well.[![](images/reproducible img.jpeg){width="339"}](#0)
+## 
