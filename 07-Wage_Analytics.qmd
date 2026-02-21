@@ -125,7 +125,7 @@ This regression model conveys that Hs Grad, Some College, College Grad, Advanced
 #| paged-print: false
 wage_testing_data$pred_prob<- predict(wage_model, newdata = wage_testing_data, type = "response")
 wage_testing_data$pred_class<- ifelse(wage_testing_data$pred_prob > 0.5, "High", "Low") %>% as.factor()
-View(wage_testing_data)
+head(wage_testing_data)
 
 library(car)
 library(caret)
