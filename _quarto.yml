@@ -9,7 +9,7 @@ book:
     - index.qmd
     - intro.qmd
     - 01-NYC-NYPD-Shooting-data.qmd
-    - 02_Continuing-the-Law-Firm-Analysis.qmd
+    - 02-Continuing_the_Law_Firm_analysis_assignment.qmd
     - 03-Reproducible_psyc_midterm.qmd
     - 04-NBA_analysis.qmd
     - 05-Florida_Crime_Analytics.qmd
