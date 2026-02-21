@@ -57,9 +57,9 @@ head(all_teams)
 #| warning: true
 #| label: adding-team-conferences
 team_conference<- read_excel("Team Conferences.xlsx")
-View(team_conference)
+head(team_conference)
 full_team_data<- merge(all_teams, team_conference)
-View(full_team_data)
+head(full_team_data)
 full_team_data<- full_team_data %>% 
   mutate(
     Conference= case_when(
