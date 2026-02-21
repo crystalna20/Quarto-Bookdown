@@ -21,6 +21,7 @@ library(readxl)
 library(tidyverse)
 NBA_teams<- "NBA Team Total Data 2024-2025.xlsx"
 
+file_name<- "NBA Team Total Data 2024-2025.xlsx"
 team_sheets <- excel_sheets(NBA_teams)
 team_sheets
 
