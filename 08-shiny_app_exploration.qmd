@@ -37,7 +37,7 @@ We are also looking at the agency names.
 #| warning: false
 #| paged-print: false
 data_311<- nyc_311(limit=10000)
-View(data_311)
+head(data_311)
 unique(data_311$agency_name)
 ```
 

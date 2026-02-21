@@ -33,10 +33,10 @@ library(AICcmodavg)
 #| paged-print: false
 sleep_exercise_info <- read_excel("midterm_sleep_exercise.xlsx", 
     sheet = "participant_info_midterm")
-View(sleep_exercise_info)
+head(sleep_exercise_info)
 sleep_exercise_data <- read_excel("midterm_sleep_exercise.xlsx", 
     sheet = "sleep_data_midterm")
-View(sleep_exercise_data)
+head(sleep_exercise_data)
 glimpse(sleep_exercise_info)
 glimpse(sleep_exercise_data)
 ```
@@ -58,18 +58,18 @@ clean_exercise_group<- sleep_exercise_info %>%
     Exercise_Group %in% c("Nonee", "NONE", "N") ~ "None",
     TRUE ~ Exercise_Group
   ))
-View(clean_exercise_group)
+head(clean_exercise_group)
 clean_sex_label <- sleep_exercise_info %>% 
   mutate(Sex = case_when(
     Sex %in% c("F", "Fem", "Femalee") ~ "Female",
     Sex %in% c("M", "MALE", "Mal", "Malee") ~ "Male",
     TRUE ~ Sex
   ))
-View(clean_sex_label)
+head(clean_sex_label)
 exercise_group_data <- merge(clean_exercise_group, clean_sex_label)
-View(exercise_group_data)
+head(exercise_group_data)
 clean_sleep_data<- merge(exercise_group_data, sleep_exercise_data)
-View(clean_sleep_data)
+head(clean_sleep_data)
 ```
 
 I was able to clean up the data in the Exercise group and Sex column in the sleep_exercise_info data set. Now the words in those columns are standardized. I also merged both data sets together.

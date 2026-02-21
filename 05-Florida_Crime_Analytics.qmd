@@ -24,7 +24,7 @@ library(dplyr)
 
 
 florida_crime<- read_xlsx("Florida County Crime Rates.xlsx")
-View(florida_crime)
+head(florida_crime)
 
 florida_crime<- florida_crime %>% rename(Crime = C, Income= I, HighSchoolGrad = HS, UrbanPop = U)
 

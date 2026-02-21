@@ -21,7 +21,7 @@ library(readxl)
 library(skimr)
 library(dplyr)
 streaming_and_age<- read_xlsx("Streaming Services and Age.xlsx")
-View(streaming_and_age)
+head(streaming_and_age)
 age_count<- streaming_and_age %>% group_by(AgeCat) %>% summarize(count=n())
 age_count
 platform_count<- streaming_and_age %>% group_by(Platform) %>% summarize(count=n())

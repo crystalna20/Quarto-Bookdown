@@ -19,8 +19,10 @@ The purpose of this chapter was to examine if there is a relationship between we
 #| label: loading-libraries-and-preparing-the-data
 library(readxl)
 library(tidyverse)
-NBA_teams<- read_xlsx("NBA Team Total Data 2024-2025.xlsx")
-View(NBA_teams)
+NBA_teams<- "NBA Team Total Data 2024-2025.xlsx"
+
+team_sheets <- excel_sheets(NBA_teams)
+team_sheets
 
 loading_teams<- function(file_name,team_name,sheet_name,PRA, Stocks){
   team_data<- read_xlsx(file_name, sheet=sheet_name)
@@ -34,22 +36,16 @@ loading_teams<- function(file_name,team_name,sheet_name,PRA, Stocks){
 team_warrior<- loading_teams("NBA Team Total Data 2024-2025.xlsx", "Warriors", "Warriors", "PRA", "Stocks")
 team_warrior
 
-getwd()
-path<- "/Users/crystaladote/Downloads/Reproducible Psyc Fall 2025/NBA Team Total Data 2024-2025.xlsx"
-file.exists(path)
-team_sheets<- excel_sheets(path)
-team_sheets
+# team_sheets<- read_xlsx("NBA Team Total Data 2024-2025.xlsx")
 
-
-file_name <- "/Users/crystaladote/Downloads/Reproducible Psyc Fall 2025/NBA Team Total Data 2024-2025.xlsx"
-team_sheets <- excel_sheets(file_name)
+# sheet_name<- excel_sheets(team_sheets)
 
 all_teams <- bind_rows(
   lapply(team_sheets, function(sheet_name) {
     loading_teams(file_name = file_name, team_name = sheet_name, sheet_name = sheet_name)
   })
 )
-View(all_teams)
+head(all_teams)
 
 ```
 

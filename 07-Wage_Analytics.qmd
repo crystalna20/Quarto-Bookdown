@@ -23,7 +23,7 @@ library(skimr)
 
 data(Wage)
 summary(Wage)
-View(Wage)
+head_while(Wage)
 
 median_wage<- median(Wage$wage)
 median_wage

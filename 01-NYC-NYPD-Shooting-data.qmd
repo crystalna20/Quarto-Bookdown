@@ -35,7 +35,7 @@ library(readxl)
 #| warning: true
 #| paged-print: true
 shooting_data<- read_xlsx("NYPD_Shooting_Incident_Data__Historic__20250910.xlsx", skip = 1)
-View(shooting_data)
+head(shooting_data)
 ```
 
 Here, I used the readxl function to pull up the shooting data from excel.

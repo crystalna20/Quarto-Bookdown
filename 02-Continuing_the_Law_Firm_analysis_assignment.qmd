@@ -53,7 +53,7 @@ resp <- GET(endpoint, query = list(
 ))
 
 camera <- fromJSON(content(resp, as = "text"), flatten = TRUE)
-View(camera)
+head(camera)
 ```
 
 ## Agency
