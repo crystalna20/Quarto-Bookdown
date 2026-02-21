@@ -34,7 +34,7 @@ library(readxl)
 #| message: true
 #| warning: true
 #| paged-print: true
-shooting_data<- read_xlsx("/Users/CrystalAdote/Desktop/2026 Experimental Psyc/NYPD_Shooting_Incident_Data__Historic__20250910.xlsx", skip = 1)
+shooting_data<- read_xlsx("NYPD_Shooting_Incident_Data__Historic__20250910.xlsx", skip = 1)
 View(shooting_data)
 ```
 
