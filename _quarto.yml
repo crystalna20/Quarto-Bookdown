@@ -15,8 +15,8 @@ book:
     - 05-Florida_Crime_Analytics.qmd
     - 06-Streaming_Analysis.qmd
     - 07-Wage_Analytics.qmd
-    - 08-shiny-app exploration.qmd
-    - 09-Final-Reflection.qmd
+    - 08-shiny-app_exploration.qmd
+    - 09-Final_Reflection.qmd
 
 
 format:
